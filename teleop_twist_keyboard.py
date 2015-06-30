@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import roslib; roslib.load_manifest('teleop_twist_keyboard')
 import rospy
+import sys
 
 from geometry_msgs.msg import Twist
 
@@ -49,17 +50,25 @@ def getKey():
 	termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
 	return key
 
-speed = .5
-turn = 1
+speed = 1.
+turn = 1.5
 
 def vels(speed,turn):
 	return "currently:\tspeed %s\tturn %s " % (speed,turn)
 
+def ttopic(t):
+	return "using topic %s " % (t)
+
 if __name__=="__main__":
+	topic = 'cmd_vel'
+	if len(sys.argv) > 2:
+		if sys.argv[1]=='-t':
+			topic = sys.argv[2]
     	settings = termios.tcgetattr(sys.stdin)
 	
-	pub = rospy.Publisher('cmd_vel', Twist)
-	rospy.init_node('teleop_twist_keyboard')
+	pub = rospy.Publisher(topic, Twist)
+	rospy.init_node('teleop_twist_keyboard', anonymous=True)
+	
 
 	x = 0
 	th = 0
@@ -68,6 +77,7 @@ if __name__=="__main__":
 	try:
 		print msg
 		print vels(speed,turn)
+		print ttopic(topic)
 		while(1):
 			key = getKey()
 			if key in moveBindings.keys():
